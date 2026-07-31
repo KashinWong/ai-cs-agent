@@ -1,0 +1,46 @@
+# 中文评测集（T043a）：每条标注期望命中的 FAQ 主题与是否应转人工。
+# expect_kb 为期望命中知识条目 title 的关键片段；expect_human=true 表示应触发转人工。
+- q: 怎么重置密码
+  expect_kb: 重置密码
+- q: 密码忘了怎么改
+  expect_kb: 重置密码
+- q: 我要改一下登录密码
+  expect_kb: 重置密码
+- q: 账号忘了怎么找回
+  expect_kb: 忘记账号
+- q: 怎么注销我的账号
+  expect_kb: 注销账号
+- q: 我想把账号删了
+  expect_kb: 注销账号
+- q: 充值了怎么还没到账
+  expect_kb: 充值未到账
+- q: 钱充进去了金币没加
+  expect_kb: 金币未到账
+- q: 怎么申请退款
+  expect_kb: 申请退款
+- q: 我要退钱
+  expect_kb: 申请退款
+- q: 支付一直失败
+  expect_kb: 支付失败
+- q: 支持哪些付款方式
+  expect_kb: 支付方式
+- q: 怎么联系真人客服
+  expect_kb: 联系人工客服
+- q: 你们客服几点上班
+  expect_kb: 客服工作时间
+- q: 怎么换绑手机号
+  expect_kb: 修改绑定手机号
+- q: 我要开发票
+  expect_kb: 开具发票
+- q: 我的数据安全吗
+  expect_kb: 数据是否安全
+- q: 怎么举报别人
+  expect_kb: 举报违规内容
+- q: app支持什么语言
+  expect_kb: 支持哪些语言
+- q: 我要转人工
+  expect_human: true
+- q: 帮我查一下订单 A123 的物流到哪了
+  expect_human: true
+- q: 我要投诉主播张三骂人
+  expect_human: true

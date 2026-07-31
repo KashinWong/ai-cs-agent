@@ -1,0 +1,121 @@
+# 租户中立通用泛例 FAQ（中/英双语）。用于 demo 检索问答。
+- lang: zh
+  title: 如何重置密码
+  content: 在登录页点击“忘记密码”，输入注册邮箱或手机号，按收到的验证码设置新密码即可。
+  meta: {category: account}
+- lang: zh
+  title: 忘记账号怎么办
+  content: 可用注册时填写的邮箱或手机号找回账号；若都遗失，请联系客服并提供身份验证信息。
+  meta: {category: account}
+- lang: zh
+  title: 如何注销账号
+  content: 进入“设置-账号安全-注销账号”，确认后账号将进入 15 天冷静期，期间可撤销注销。
+  meta: {category: account}
+- lang: zh
+  title: 充值未到账怎么办
+  content: 充值一般 5 分钟内到账。若超时未到，请在“我的-钱包-充值记录”确认订单状态，并保留支付凭证联系客服。
+  meta: {category: payment}
+- lang: zh
+  title: 金币未到账
+  content: 若支付成功但金币未增加，请提供订单号，客服将核实后为您补发。
+  meta: {category: payment}
+- lang: zh
+  title: 如何申请退款
+  content: 在“订单详情”页点击“申请退款”，填写原因提交；虚拟商品是否可退以商品页说明为准。
+  meta: {category: payment}
+- lang: zh
+  title: 支付失败怎么办
+  content: 请检查支付方式余额与网络，更换支付方式重试；多次失败可稍后再试或联系客服。
+  meta: {category: payment}
+- lang: zh
+  title: 支持哪些支付方式
+  content: 目前支持主流银行卡、信用卡及部分第三方钱包，具体以结算页展示为准。
+  meta: {category: payment}
+- lang: zh
+  title: 如何联系人工客服
+  content: 在对话中输入“转人工”，或点击客服窗口右上角的人工客服入口即可接入。
+  meta: {category: support}
+- lang: zh
+  title: 客服工作时间
+  content: 在线客服为每日 9:00-21:00；非工作时间可留言，我们会在上班后尽快回复。
+  meta: {category: support}
+- lang: zh
+  title: 如何修改绑定手机号
+  content: 进入“设置-账号安全-手机号”，通过原手机号或邮箱验证后可更换新手机号。
+  meta: {category: account}
+- lang: zh
+  title: 如何开具发票
+  content: 在“订单详情-开具发票”提交抬头与邮箱，电子发票将在 3 个工作日内发送到邮箱。
+  meta: {category: payment}
+- lang: zh
+  title: 数据是否安全
+  content: 我们对账号与支付信息采用加密存储与传输，不会向第三方泄露您的个人信息。
+  meta: {category: privacy}
+- lang: zh
+  title: 如何举报违规内容
+  content: 在对应内容页点击“举报”，选择违规类型并提交，我们会尽快核实处理。
+  meta: {category: support}
+- lang: zh
+  title: 应用支持哪些语言
+  content: 目前界面支持中文与英文，更多语言正在陆续支持中。
+  meta: {category: general}
+- lang: en
+  title: How to reset my password
+  content: On the login page tap "Forgot password", enter your registered email or phone, then set a new password with the verification code you receive.
+  meta: {category: account}
+- lang: en
+  title: I forgot my account
+  content: You can recover your account with the email or phone used at registration. If both are lost, contact support with identity verification.
+  meta: {category: account}
+- lang: en
+  title: How to delete my account
+  content: Go to Settings - Account Security - Delete Account. After confirming, the account enters a 15-day cooling period during which deletion can be cancelled.
+  meta: {category: account}
+- lang: en
+  title: My top-up has not arrived
+  content: Top-ups usually arrive within 5 minutes. If delayed, check the order status under My - Wallet - Top-up Records and contact support with your payment receipt.
+  meta: {category: payment}
+- lang: en
+  title: Coins not credited
+  content: If payment succeeded but coins were not added, provide your order number and support will verify and re-issue them.
+  meta: {category: payment}
+- lang: en
+  title: How to request a refund
+  content: Open Order Details and tap "Request Refund", then submit a reason. Whether virtual goods are refundable follows the product page terms.
+  meta: {category: payment}
+- lang: en
+  title: Payment failed
+  content: Check your payment method balance and network, then retry with another method. If it keeps failing, try again later or contact support.
+  meta: {category: payment}
+- lang: en
+  title: Which payment methods are supported
+  content: We currently support major debit/credit cards and some third-party wallets. The checkout page shows the exact options.
+  meta: {category: payment}
+- lang: en
+  title: How to reach a human agent
+  content: Type "talk to a human" in the chat, or use the live-agent entry at the top-right of the chat window.
+  meta: {category: support}
+- lang: en
+  title: Support working hours
+  content: Live support is available daily 9:00-21:00. Outside these hours leave a message and we will reply as soon as we are back.
+  meta: {category: support}
+- lang: en
+  title: How to change my bound phone number
+  content: Go to Settings - Account Security - Phone Number and verify via your old phone or email to switch to a new number.
+  meta: {category: account}
+- lang: en
+  title: How to get an invoice
+  content: Under Order Details - Get Invoice, submit the title and email. The e-invoice will be sent to your email within 3 business days.
+  meta: {category: payment}
+- lang: en
+  title: Is my data safe
+  content: Account and payment information is encrypted at rest and in transit, and we never disclose your personal data to third parties.
+  meta: {category: privacy}
+- lang: en
+  title: How to report abusive content
+  content: Tap "Report" on the content, choose the violation type and submit. We will review and handle it promptly.
+  meta: {category: support}
+- lang: en
+  title: Which languages are supported
+  content: The interface currently supports Chinese and English, with more languages coming soon.
+  meta: {category: general}

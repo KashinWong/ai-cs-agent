@@ -1,0 +1,86 @@
+name: ai-cs-agent
+
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ai_cs
+      MYSQL_USER: ai
+      MYSQL_PASSWORD: ai
+    ports: ["3306:3306"]
+    volumes: ["mysql_data:/var/lib/mysql"]
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uai", "-pai"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports: ["6333:6333"]
+    volumes: ["qdrant_data:/qdrant/storage"]
+    # qdrant 镜像无 shell 工具，就绪由 api 侧 infra 客户端带重试连接判定（T018）
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    env_file: [.env]
+    environment:
+      MYSQL_DSN: mysql+aiomysql://ai:ai@mysql:3306/ai_cs
+      REDIS_URL: redis://redis:6379/0
+      QDRANT_URL: http://qdrant:6333
+      HF_ENDPOINT: https://hf-mirror.com
+      HF_HUB_ENABLE_HF_TRANSFER: "0"
+    volumes:
+      - hf_cache:/home/appuser/.cache
+    ports: ["8000:8000"]
+    depends_on:
+      mysql: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      qdrant: { condition: service_started }
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/api/v1/health').status==200 else 1)\""]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+
+  worker:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    env_file: [.env]
+    environment:
+      MYSQL_DSN: mysql+aiomysql://ai:ai@mysql:3306/ai_cs
+      REDIS_URL: redis://redis:6379/0
+      QDRANT_URL: http://qdrant:6333
+      HF_ENDPOINT: https://hf-mirror.com
+      HF_HUB_ENABLE_HF_TRANSFER: "0"
+    volumes:
+      - hf_cache:/home/appuser/.cache
+    command: ["python", "-m", "app.workers.index_worker"]
+    depends_on:
+      api: { condition: service_healthy }
+
+  web:
+    build:
+      context: ./frontend
+    ports: ["8080:80"]
+    depends_on:
+      api: { condition: service_healthy }
+
+volumes:
+  mysql_data:
+  qdrant_data:
+  hf_cache:

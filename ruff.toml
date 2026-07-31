@@ -1,0 +1,10 @@
+line-length = 100
+target-version = "py311"
+
+[lint]
+select = ["E", "F", "I", "UP", "B"]
+# FastAPI 惯用 Depends() 作为默认参数值
+ignore = ["B008"]
+
+[lint.per-file-ignores]
+"tests/*" = ["B011"]

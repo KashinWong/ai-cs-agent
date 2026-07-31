@@ -1,0 +1,45 @@
+# English eval set (T043a): expect_kb = key fragment of expected FAQ title; expect_human=true.
+- q: how do I reset my password
+  expect_kb: reset my password
+- q: I forgot my password, how to change it
+  expect_kb: reset my password
+- q: need to change my login password
+  expect_kb: reset my password
+- q: how to recover my account
+  expect_kb: forgot my account
+- q: how do I delete my account
+  expect_kb: delete my account
+- q: I want to remove my account
+  expect_kb: delete my account
+- q: my top up hasn't arrived yet
+  expect_kb: top-up has not arrived
+- q: I paid but coins are missing
+  expect_kb: Coins not credited
+- q: how to request a refund
+  expect_kb: request a refund
+- q: I want my money back
+  expect_kb: request a refund
+- q: my payment keeps failing
+  expect_kb: payment
+- q: what payment methods do you support
+  expect_kb: payment methods
+- q: how can I reach a human agent
+  expect_kb: contact
+- q: what are your support hours
+  expect_kb: hours
+- q: how to change my bound phone number
+  expect_kb: phone number
+- q: I need an invoice
+  expect_kb: invoice
+- q: is my data safe
+  expect_kb: data safe
+- q: how to report abusive content
+  expect_kb: report abusive
+- q: which languages does the app support
+  expect_kb: languages
+- q: I want to talk to a human
+  expect_human: true
+- q: track the shipping status of order A123 for me
+  expect_human: true
+- q: I want to file a complaint about streamer John
+  expect_human: true
