@@ -2,6 +2,8 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
+import "./theme.css";
+import "./app.css";
 import Inbox from "./pages/Inbox";
 import KnowledgeAdmin from "./pages/KnowledgeAdmin";
 import Login from "./pages/Login";

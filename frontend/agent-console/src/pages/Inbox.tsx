@@ -6,8 +6,18 @@ import { api, clearToken, getToken } from "../api/client";
 type Conv = { id: number; status: string; lang: string; assigned_agent_id: number | null; last_activity_at: string | null };
 type Msg = { id: number; source: string; content: string; created_at: string | null };
 
-const STATUS_LABEL: Record<string, string> = {
-  ai: "AI 应答中", pending_human: "待接管", human: "人工中", closed: "已结束",
+const STATUS: Record<string, { label: string; cls: string }> = {
+  ai: { label: "AI 应答中", cls: "badge-ai" },
+  pending_human: { label: "待接管", cls: "badge-pending" },
+  human: { label: "人工中", cls: "badge-human" },
+  closed: { label: "已结束", cls: "badge-closed" },
+};
+
+const SRC: Record<string, { label: string; bg: string; fg: string; align: string; border: string }> = {
+  user: { label: "用户", bg: "var(--surface)", fg: "var(--text)", align: "flex-start", border: "1px solid var(--border)" },
+  ai: { label: "AI", bg: "var(--brand)", fg: "#fff", align: "flex-end", border: "0" },
+  agent: { label: "坐席", bg: "var(--agent-soft)", fg: "#0f4f4e", align: "flex-end", border: "1px solid #b8f0eb" },
+  system: { label: "系统", bg: "var(--surface-2)", fg: "var(--text-2)", align: "center", border: "0" },
 };
 
 export default function Inbox() {
@@ -17,6 +27,7 @@ export default function Inbox() {
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [text, setText] = useState("");
   const selRef = useRef<number | null>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
   selRef.current = sel;
 
   useEffect(() => {
@@ -33,7 +44,6 @@ export default function Inbox() {
       }
     }
   }
-
   async function loadMsgs(id: number) {
     setMsgs(await api<Msg[]>(`/conversations/${id}/messages`));
   }
@@ -47,17 +57,17 @@ export default function Inbox() {
     return () => clearInterval(t);
   }, []);
 
+  useEffect(() => {
+    if (bodyRef.current) bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
+  }, [msgs]);
+
   async function open(id: number) {
     setSel(id);
     await loadMsgs(id);
   }
-
   async function act(path: string, body?: any) {
     if (!sel) return;
-    await api(`/conversations/${sel}/${path}`, {
-      method: "POST",
-      body: body ? JSON.stringify(body) : undefined,
-    });
+    await api(`/conversations/${sel}/${path}`, { method: "POST", body: body ? JSON.stringify(body) : undefined });
     await loadConvs();
     await loadMsgs(sel);
   }
@@ -66,65 +76,81 @@ export default function Inbox() {
   const pending = convs.filter((c) => c.status === "pending_human").length;
 
   return (
-    <div style={{ display: "flex", height: "100vh", fontFamily: "system-ui" }}>
-      <div style={{ width: 300, borderRight: "1px solid #e5e7eb", overflowY: "auto" }}>
-        <div style={{ padding: 12, fontWeight: 600, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span>会话{pending > 0 && <span style={{ color: "#dc2626" }}>（待接管 {pending}）</span>}</span>
-          <span style={{ display: "flex", gap: 10 }}>
-            <a href="/console/knowledge" style={{ color: "#2563eb", textDecoration: "none", fontWeight: 400, fontSize: 13 }}>知识库</a>
-            <button onClick={() => { clearToken(); nav("/login"); }} style={{ border: 0, background: "none", color: "#6b7280", cursor: "pointer" }}>退出</button>
-          </span>
-        </div>
-        {convs.map((c) => (
-          <div key={c.id} onClick={() => open(c.id)}
-            style={{ padding: "10px 12px", cursor: "pointer", background: c.id === sel ? "#eff6ff" : "#fff", borderBottom: "1px solid #f3f4f6" }}>
-            <div>#{c.id} · {STATUS_LABEL[c.status] || c.status}</div>
-            <div style={{ fontSize: 12, color: "#9ca3af" }}>{c.last_activity_at?.slice(11, 19)}</div>
+    <div style={{ display: "flex", height: "100vh" }}>
+      {/* 侧栏 */}
+      <aside style={{ width: 300, borderRight: "1px solid var(--border)", display: "flex", flexDirection: "column", background: "var(--surface)" }}>
+        <div style={{ padding: "16px 16px 12px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div>
+            <div style={{ fontWeight: 600, fontSize: 15 }}>会话</div>
+            {pending > 0 && <div style={{ fontSize: 12, color: "var(--warn)", marginTop: 2 }}>{pending} 个待接管</div>}
           </div>
-        ))}
-      </div>
-      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <a href="/console/knowledge" style={{ fontSize: 13 }}>知识库</a>
+            <button className="btn-link" onClick={() => { clearToken(); nav("/login"); }}>退出</button>
+          </div>
+        </div>
+        <div style={{ flex: 1, overflowY: "auto" }}>
+          {convs.length === 0 && <div className="muted" style={{ padding: 24, textAlign: "center", fontSize: 13 }}>暂无会话</div>}
+          {convs.map((c) => {
+            const s = STATUS[c.status] || STATUS.ai;
+            return (
+              <div key={c.id} onClick={() => open(c.id)}
+                style={{ padding: "12px 16px", cursor: "pointer", borderLeft: c.id === sel ? "3px solid var(--brand)" : "3px solid transparent", background: c.id === sel ? "var(--brand-soft)" : "transparent", borderBottom: "1px solid var(--surface-2)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                  <span style={{ fontWeight: 600, fontSize: 13.5 }}>会话 #{c.id}</span>
+                  <span className={`badge ${s.cls}`}>{s.label}</span>
+                </div>
+                <div className="muted" style={{ fontSize: 12 }}>{c.last_activity_at?.slice(5, 19).replace("T", " ")}</div>
+              </div>
+            );
+          })}
+        </div>
+      </aside>
+
+      {/* 主区 */}
+      <main style={{ flex: 1, display: "flex", flexDirection: "column", background: "var(--bg)" }}>
         {!cur ? (
-          <div style={{ margin: "auto", color: "#9ca3af" }}>选择一个会话</div>
+          <div className="muted" style={{ margin: "auto", textAlign: "center" }}>
+            <div style={{ fontSize: 40, marginBottom: 8 }}>💬</div>
+            选择左侧会话查看对话
+          </div>
         ) : (
           <>
-            <div style={{ padding: 12, borderBottom: "1px solid #e5e7eb", display: "flex", gap: 8 }}>
-              <b>#{cur.id} · {STATUS_LABEL[cur.status]}</b>
+            <header style={{ padding: "14px 20px", borderBottom: "1px solid var(--border)", background: "var(--surface)", display: "flex", alignItems: "center", gap: 12 }}>
+              <b style={{ fontSize: 15 }}>会话 #{cur.id}</b>
+              <span className={`badge ${(STATUS[cur.status] || STATUS.ai).cls}`}>{(STATUS[cur.status] || STATUS.ai).label}</span>
               <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
-                {(cur.status === "pending_human" || cur.status === "ai") && (
-                  <button onClick={() => act("claim")}>接管</button>
-                )}
-                {cur.status === "human" && (
-                  <button onClick={() => act("mode", { mode: "ai" })}>切回 AI</button>
-                )}
-                {cur.status !== "closed" && <button onClick={() => act("close")}>结束</button>}
+                {(cur.status === "pending_human" || cur.status === "ai") && <button className="btn btn-primary btn-sm" onClick={() => act("claim")}>接管</button>}
+                {cur.status === "human" && <button className="btn btn-ghost btn-sm" onClick={() => act("mode", { mode: "ai" })}>切回 AI</button>}
+                {cur.status !== "closed" && <button className="btn btn-ghost btn-sm" onClick={() => act("close")}>结束</button>}
               </div>
-            </div>
-            <div style={{ flex: 1, overflowY: "auto", padding: 16, background: "#f9fafb" }}>
-              {msgs.map((m) => (
-                <div key={m.id} style={{ display: "flex", justifyContent: m.source === "user" ? "flex-start" : "flex-end", marginBottom: 8 }}>
-                  <div style={{ maxWidth: "70%", padding: "8px 12px", borderRadius: 8, whiteSpace: "pre-wrap",
-                    background: m.source === "user" ? "#fff" : m.source === "agent" ? "#059669" : m.source === "system" ? "#e5e7eb" : "#2563eb",
-                    color: m.source === "user" || m.source === "system" ? "#111827" : "#fff" }}>
-                    <div style={{ fontSize: 11, opacity: 0.7 }}>{m.source}</div>
-                    {m.content}
+            </header>
+            <div ref={bodyRef} style={{ flex: 1, overflowY: "auto", padding: 20, display: "flex", flexDirection: "column", gap: 12 }}>
+              {msgs.map((m) => {
+                const s = SRC[m.source] || SRC.system;
+                return (
+                  <div key={m.id} style={{ display: "flex", justifyContent: s.align }}>
+                    <div style={{ maxWidth: "72%" }}>
+                      <div className="muted" style={{ fontSize: 11, margin: s.align === "flex-end" ? "0 4px 3px auto" : "0 0 3px 4px", textAlign: s.align === "flex-end" ? "right" : "left" }}>{s.label}</div>
+                      <div style={{ padding: "9px 13px", borderRadius: 12, background: s.bg, color: s.fg, border: s.border, whiteSpace: "pre-wrap", fontSize: 14, lineHeight: 1.55, boxShadow: "var(--shadow-sm)" }}>
+                        {m.content}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
-            <div style={{ display: "flex", borderTop: "1px solid #e5e7eb" }}>
-              <input value={text} onChange={(e) => setText(e.target.value)}
+            <div style={{ display: "flex", gap: 8, padding: 12, borderTop: "1px solid var(--border)", background: "var(--surface)" }}>
+              <input className="field" value={text} onChange={(e) => setText(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter" && text.trim()) { act("reply", { content: text }); setText(""); } }}
-                placeholder={cur.status === "human" ? "输入回复…" : "需先接管才能回复"}
-                disabled={cur.status !== "human"}
-                style={{ flex: 1, border: 0, padding: 12, outline: "none" }} />
-              <button disabled={cur.status !== "human" || !text.trim()}
-                onClick={() => { act("reply", { content: text }); setText(""); }}
-                style={{ border: 0, background: "#2563eb", color: "#fff", padding: "0 20px" }}>发送</button>
+                placeholder={cur.status === "human" ? "输入回复，Enter 发送…" : "需先「接管」才能回复"}
+                disabled={cur.status !== "human"} />
+              <button className="btn btn-primary" disabled={cur.status !== "human" || !text.trim()}
+                onClick={() => { act("reply", { content: text }); setText(""); }}>发送</button>
             </div>
           </>
         )}
-      </div>
+      </main>
     </div>
   );
 }

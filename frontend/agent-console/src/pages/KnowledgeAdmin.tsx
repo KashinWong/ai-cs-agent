@@ -134,112 +134,103 @@ export default function KnowledgeAdmin() {
     }
   }
 
-  const statusColor: Record<string, string> = {
-    indexed: "#059669",
-    pending: "#d97706",
-    stale: "#dc2626",
+  const statusBadge: Record<string, string> = {
+    indexed: "badge-human",
+    pending: "badge-pending",
+    stale: "badge-closed",
   };
 
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto", padding: 24, fontFamily: "system-ui" }}>
-      <div style={{ display: "flex", alignItems: "center", marginBottom: 16 }}>
-        <h2 style={{ margin: 0 }}>知识库管理</h2>
-        <div style={{ marginLeft: "auto", display: "flex", gap: 12 }}>
-          <a href="/console/" style={{ color: "#2563eb", textDecoration: "none" }}>← 返回工作台</a>
-          <button onClick={() => { clearToken(); nav("/login"); }}
-            style={{ border: 0, background: "none", color: "#6b7280", cursor: "pointer" }}>退出</button>
-        </div>
-      </div>
+    <div style={{ minHeight: "100vh" }}>
+      {/* 顶栏 */}
+      <header style={{ background: "var(--surface)", borderBottom: "1px solid var(--border)", padding: "14px 24px", display: "flex", alignItems: "center", gap: 12, position: "sticky", top: 0, zIndex: 10 }}>
+        <a href="/console/" style={{ fontSize: 13 }}>← 工作台</a>
+        <h2 style={{ margin: 0, fontSize: 17 }}>知识库管理</h2>
+        <span className="muted" style={{ fontSize: 13 }}>{items.length} 条</span>
+        <button className="btn-link" style={{ marginLeft: "auto" }} onClick={() => { clearToken(); nav("/login"); }}>退出</button>
+      </header>
 
-      {/* 新增/编辑表单 */}
-      <form onSubmit={save} style={{ border: "1px solid #e5e7eb", borderRadius: 10, padding: 16, marginBottom: 20, background: "#fafafa" }}>
-        <div style={{ fontWeight: 600, marginBottom: 10 }}>{editing ? `编辑 #${form.id}` : "新增知识条目"}</div>
-        <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
-          <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })}
-            placeholder="标题（如：如何重置密码）"
-            style={{ flex: 2, padding: 9, border: "1px solid #d1d5db", borderRadius: 6 }} />
-          <select value={form.lang} onChange={(e) => setForm({ ...form, lang: e.target.value })}
-            style={{ padding: 9, border: "1px solid #d1d5db", borderRadius: 6 }}>
+      <div style={{ maxWidth: 940, margin: "0 auto", padding: 24 }}>
+        {/* 新增/编辑表单 */}
+        <form onSubmit={save} className="card" style={{ padding: 20, marginBottom: 20 }}>
+          <div style={{ fontWeight: 600, marginBottom: 14, fontSize: 15 }}>{editing ? `编辑条目 #${form.id}` : "新增知识条目"}</div>
+          <div style={{ display: "flex", gap: 10, marginBottom: 12 }}>
+            <input className="field" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })}
+              placeholder="标题（如：如何重置密码）" style={{ flex: 2 }} />
+            <select className="field" value={form.lang} onChange={(e) => setForm({ ...form, lang: e.target.value })} style={{ width: 110, flex: "none" }}>
+              <option value="zh">中文</option>
+              <option value="en">English</option>
+            </select>
+            <input className="field" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}
+              placeholder="分类（可选）" style={{ flex: 1 }} />
+          </div>
+          <textarea className="field" value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })}
+            placeholder="回答内容（AI 将严格依据此内容作答）" rows={4} />
+          <div style={{ marginTop: 14, display: "flex", gap: 10, alignItems: "center" }}>
+            <button type="submit" className="btn btn-primary" disabled={busy}>{editing ? "保存修改" : "新增"}</button>
+            {editing && <button type="button" className="btn btn-ghost" onClick={resetForm}>取消</button>}
+            {msg && <span style={{ color: msg.includes("失败") ? "var(--danger)" : "var(--ok)", fontSize: 13 }}>{msg}</span>}
+          </div>
+        </form>
+
+        {/* Markdown 批量导入 */}
+        <form onSubmit={importMd} className="card" style={{ padding: 20, marginBottom: 24, borderStyle: "dashed" }}>
+          <div style={{ fontWeight: 600, marginBottom: 6, fontSize: 15 }}>📄 从 Markdown 导入</div>
+          <div className="muted" style={{ fontSize: 12.5, marginBottom: 14, lineHeight: 1.6 }}>
+            按标题（# / ##）切分，每个标题为一条 FAQ，标题下正文为回答内容。导入后自动向量索引，即刻可被检索命中。
+          </div>
+          <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+            <input type="file" accept=".md,.markdown,.txt,text/markdown" style={{ fontSize: 13 }}
+              onChange={(e) => setImpFile(e.target.files?.[0] || null)} />
+            <select className="field" value={impLang} onChange={(e) => setImpLang(e.target.value)} style={{ width: 110 }}>
+              <option value="zh">中文</option>
+              <option value="en">English</option>
+            </select>
+            <button type="submit" className="btn btn-accent" disabled={busy || !impFile}>导入</button>
+            {impMsg && <span style={{ color: impMsg.includes("失败") ? "var(--danger)" : "var(--agent)", fontSize: 13 }}>{impMsg}</span>}
+          </div>
+        </form>
+
+        {/* 过滤 + 列表 */}
+        <div style={{ display: "flex", alignItems: "center", marginBottom: 12, gap: 12 }}>
+          <b style={{ fontSize: 15 }}>知识条目</b>
+          <select className="field" value={langFilter} onChange={(e) => setLangFilter(e.target.value)} style={{ width: 130 }}>
+            <option value="">全部语言</option>
             <option value="zh">中文</option>
             <option value="en">English</option>
           </select>
-          <input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}
-            placeholder="分类(可选)"
-            style={{ flex: 1, padding: 9, border: "1px solid #d1d5db", borderRadius: 6 }} />
         </div>
-        <textarea value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })}
-          placeholder="回答内容（AI 将严格依据此内容作答）" rows={4}
-          style={{ width: "100%", padding: 9, border: "1px solid #d1d5db", borderRadius: 6, boxSizing: "border-box", resize: "vertical" }} />
-        <div style={{ marginTop: 10, display: "flex", gap: 10, alignItems: "center" }}>
-          <button type="submit" disabled={busy}
-            style={{ padding: "9px 18px", background: "#2563eb", color: "#fff", border: 0, borderRadius: 6, cursor: "pointer" }}>
-            {editing ? "保存修改" : "新增"}
-          </button>
-          {editing && (
-            <button type="button" onClick={resetForm}
-              style={{ padding: "9px 18px", background: "#fff", border: "1px solid #d1d5db", borderRadius: 6, cursor: "pointer" }}>取消</button>
-          )}
-          {msg && <span style={{ color: msg.includes("失败") ? "#dc2626" : "#059669", fontSize: 13 }}>{msg}</span>}
+        <div className="card" style={{ overflow: "hidden" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
+            <thead>
+              <tr style={{ textAlign: "left", background: "var(--surface-2)", color: "var(--text-2)", fontSize: 12.5 }}>
+                <th style={{ padding: "10px 14px", width: 50 }}>#</th>
+                <th style={{ padding: "10px 8px", width: 56 }}>语言</th>
+                <th style={{ padding: "10px 8px" }}>标题</th>
+                <th style={{ padding: "10px 8px", width: 96 }}>索引</th>
+                <th style={{ padding: "10px 14px", width: 120, textAlign: "right" }}>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.length === 0 && (
+                <tr><td colSpan={5} className="muted" style={{ padding: 32, textAlign: "center" }}>暂无条目，可新增或从 Markdown 导入</td></tr>
+              )}
+              {items.map((it) => (
+                <tr key={it.id} style={{ borderTop: "1px solid var(--surface-2)" }}>
+                  <td style={{ padding: "11px 14px", color: "var(--text-3)" }}>{it.id}</td>
+                  <td style={{ padding: "11px 8px" }}>{it.lang}</td>
+                  <td style={{ padding: "11px 8px" }}>{it.title}</td>
+                  <td style={{ padding: "11px 8px" }}><span className={`badge ${statusBadge[it.vector_status] || "badge-closed"}`}>{it.vector_status}</span></td>
+                  <td style={{ padding: "11px 14px", textAlign: "right" }}>
+                    <button className="btn-link" onClick={() => startEdit(it)}>编辑</button>
+                    <button className="btn-link danger" onClick={() => remove(it)}>删除</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      </form>
-
-      {/* Markdown 批量导入 */}
-      <form onSubmit={importMd} style={{ border: "1px dashed #cbd5e1", borderRadius: 10, padding: 16, marginBottom: 20 }}>
-        <div style={{ fontWeight: 600, marginBottom: 8 }}>从 Markdown 文件导入</div>
-        <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 10 }}>
-          按标题（# / ##）切分，每个标题为一条 FAQ，标题下正文为回答内容。导入后自动向量索引。
-        </div>
-        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-          <input type="file" accept=".md,.markdown,.txt,text/markdown"
-            onChange={(e) => setImpFile(e.target.files?.[0] || null)} />
-          <select value={impLang} onChange={(e) => setImpLang(e.target.value)}
-            style={{ padding: 8, border: "1px solid #d1d5db", borderRadius: 6 }}>
-            <option value="zh">中文</option>
-            <option value="en">English</option>
-          </select>
-          <button type="submit" disabled={busy || !impFile}
-            style={{ padding: "8px 16px", background: "#0f766e", color: "#fff", border: 0, borderRadius: 6, cursor: impFile ? "pointer" : "not-allowed" }}>
-            导入
-          </button>
-          {impMsg && <span style={{ color: impMsg.includes("失败") ? "#dc2626" : "#0f766e", fontSize: 13 }}>{impMsg}</span>}
-        </div>
-      </form>
-
-      {/* 过滤 + 列表 */}
-      <div style={{ display: "flex", alignItems: "center", marginBottom: 10 }}>
-        <b>知识条目（{items.length}）</b>
-        <select value={langFilter} onChange={(e) => setLangFilter(e.target.value)}
-          style={{ marginLeft: 12, padding: 6, border: "1px solid #d1d5db", borderRadius: 6 }}>
-          <option value="">全部语言</option>
-          <option value="zh">中文</option>
-          <option value="en">English</option>
-        </select>
       </div>
-      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
-        <thead>
-          <tr style={{ textAlign: "left", borderBottom: "2px solid #e5e7eb", color: "#6b7280" }}>
-            <th style={{ padding: "8px 6px", width: 40 }}>#</th>
-            <th style={{ padding: "8px 6px", width: 48 }}>语言</th>
-            <th style={{ padding: "8px 6px" }}>标题</th>
-            <th style={{ padding: "8px 6px", width: 80 }}>索引</th>
-            <th style={{ padding: "8px 6px", width: 110 }}>操作</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((it) => (
-            <tr key={it.id} style={{ borderBottom: "1px solid #f3f4f6" }}>
-              <td style={{ padding: "8px 6px", color: "#9ca3af" }}>{it.id}</td>
-              <td style={{ padding: "8px 6px" }}>{it.lang}</td>
-              <td style={{ padding: "8px 6px" }}>{it.title}</td>
-              <td style={{ padding: "8px 6px", color: statusColor[it.vector_status] || "#6b7280" }}>{it.vector_status}</td>
-              <td style={{ padding: "8px 6px" }}>
-                <button onClick={() => startEdit(it)} style={{ marginRight: 8, border: 0, background: "none", color: "#2563eb", cursor: "pointer" }}>编辑</button>
-                <button onClick={() => remove(it)} style={{ border: 0, background: "none", color: "#dc2626", cursor: "pointer" }}>删除</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
     </div>
   );
 }

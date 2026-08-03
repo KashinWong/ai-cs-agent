@@ -25,3 +25,8 @@ Thumbs.db
 # Data
 qdrant_storage/
 *.log
+
+# 本地临时产物（截图 / playwright）
+.playwright-mcp/
+frontend/ui-*.png
+widget-new.png
