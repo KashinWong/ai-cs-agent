@@ -112,19 +112,26 @@ async def widget_ws(
             # 人工态：消息落库交给坐席，AI 不抢答（FR-005）
             if conv and conv.status == ConversationStatus.human:
                 continue
-            # 待接管态：仍无坐席接管，回排队提示而非静默（澄清 Q5）
+            # 待接管但无人接管：检测用户意图，有实质问题自动切回 AI
             if conv and conv.status == ConversationStatus.pending_human:
-                await ws.send_json(
-                    _env(
-                        "handoff",
-                        {
-                            "status": "pending_human",
-                            "notice": "您的消息已记录，人工客服仍在忙线，请稍候。 / "
-                            "Your message is noted; a human agent will be with you shortly.",
-                        },
-                    )
-                )
-                continue
+                from app.domain.routing import classify_noise, detect_human_intent
+
+                if detect_human_intent(text):
+                    await ws.send_json(
+                        _env("handoff", {"status": "pending_human",
+                              "notice": "仍在排队等待人工客服，也可问我知识库内的问题，我会尝试解答。"}))
+                    continue
+                if classify_noise(text):
+                    await ws.send_json(
+                        _env("handoff", {"status": "pending_human",
+                              "notice": "人工客服仍在忙线，请描述具体问题。"}))
+                    continue
+                # 用户发了实质问题 → 自动切回 AI，继续回答
+                async with async_session_factory() as session:
+                    await ConversationRepository(session).set_status(
+                        conv_id, ConversationStatus.ai)
+                    await session.commit()
+                await ws.send_json(_env("mode_changed", {"mode": "ai"}))
 
             async def on_token(tok: str) -> None:
                 await ws.send_json(_env("ai_token", {"delta": tok}))

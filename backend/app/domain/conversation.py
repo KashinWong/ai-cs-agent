@@ -15,10 +15,10 @@ class ConvStatus(str, Enum):
 
 
 class ConvEvent(str, Enum):
-    escalate = "escalate"          # 判据命中 / 用户要人工
-    claim = "claim"                # 坐席接管
-    switch_to_ai = "switch_to_ai"  # 坐席切回 AI
-    close = "close"                # 结束会话
+    escalate = "escalate"            # 判据命中 / 用户要人工
+    claim = "claim"                  # 坐席接管
+    switch_to_ai = "switch_to_ai"    # 坐席切回 AI / 无人接时自动回退
+    close = "close"                  # 结束会话
 
 
 class InvalidTransition(Exception):
@@ -30,6 +30,7 @@ _TABLE: dict[tuple[ConvStatus, ConvEvent], ConvStatus] = {
     (ConvStatus.ai, ConvEvent.claim): ConvStatus.human,          # 坐席主动接管 AI 会话
     (ConvStatus.ai, ConvEvent.close): ConvStatus.closed,
     (ConvStatus.pending_human, ConvEvent.claim): ConvStatus.human,
+    (ConvStatus.pending_human, ConvEvent.switch_to_ai): ConvStatus.ai,  # 无人接自动回退
     (ConvStatus.pending_human, ConvEvent.close): ConvStatus.closed,
     (ConvStatus.human, ConvEvent.switch_to_ai): ConvStatus.ai,
     (ConvStatus.human, ConvEvent.close): ConvStatus.closed,

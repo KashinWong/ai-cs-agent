@@ -21,6 +21,10 @@ def test_ai_direct_claim_to_human():
     assert transition(ConvStatus.ai, ConvEvent.claim) == ConvStatus.human
 
 
+def test_pending_auto_switch_back_to_ai():
+    assert transition(ConvStatus.pending_human, ConvEvent.switch_to_ai) == ConvStatus.ai
+
+
 def test_human_switch_back_to_ai():
     assert transition(ConvStatus.human, ConvEvent.switch_to_ai) == ConvStatus.ai
 
